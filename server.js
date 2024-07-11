@@ -4,10 +4,12 @@ require("dotenv").config();
 const slackRoutes = require("./routes/AuthRoutes");
 const TeamsMessage = require("./routes/teamsRoute");
 const githubEndPoints = require("./routes/gitRoutes");
+const connectdb = require("./config/db");
 
 
 const server = express();
 const PORT = process.env.PORT;
+connectdb();
 
 server.use(cors());
 //

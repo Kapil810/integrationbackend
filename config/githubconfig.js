@@ -1,5 +1,6 @@
 // git configuration for authentication
 const axios = require("axios");
+const thirdPartyApps = require('../model/appsmodel');
 
 
 const auth = async(req,res)=>{
@@ -27,7 +28,21 @@ const authorize = async(req,res)=>{
         });
     
         const accessToken = tokenResponse.data.access_token;
-        console.log("this is github accessToken",accessToken);
+         try{
+          const data = await thirdPartyApps.findOne({provider:"github"});
+             if(!data){
+              const doc = await thirdPartyApps.create({provider:"github",accessToken:accessToken});
+                 console.log("token successfully saved");
+             }else{
+               data.accessToken = accessToken;
+               res.status(202).json({message:"accesstoken updated successfully"})
+             }
+         }catch(error){
+          console.log("error in updating access token",error);
+          if(error.response){
+            res.status(400).json({message:error.response.data.message});
+          }
+         }
         res.cookie('accessToken', accessToken, { httpOnly: true })
         res.send('Login successful, you can track message.');
         // Use access token to get user info
