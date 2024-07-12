@@ -184,8 +184,10 @@ const sendMessageToPerson = async (req, res) => {
 // chat  group message extract group id
 
 const getGroupChatId = async (req, res) => {
+   console.log("this is req headers", req.headers);
   const accessToken = req.headers.authorization;
-
+    console.log("this is accesstoken",accessToken);
+  let grouplist = [];
   if (!accessToken) {
     res.json({ message: "message not found" });
     return;
@@ -201,8 +203,9 @@ const getGroupChatId = async (req, res) => {
     console.log("this is all list group", response);
     // Assuming group chat name is known
     const groupChat = response.data.value.forEach((element) => {
-      console.log("groups", element);
+      grouplist.push(element)
     });
+     console.log("this is group list",grouplist);
   } catch (error) {
     console.error("Error getting group chat ID:", error.message);
     throw error;

@@ -22,13 +22,32 @@ const authorize = async (req, res) => {
       },
       data: `client_id=${clientId}&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default&code=${code}&redirect_uri=${redirectUri}&grant_type=authorization_code&client_secret=${clientSecret}`,
     });
+
     const accessToken = response.data.access_token;
-    res.cookie('accessToken', accessToken, { httpOnly: true });
-    res.send('Login successful, you can now post a message.');
+     console.log("this is microsoft response",response.data);
+
+    try {
+      const data = await app.findOne({ provider: "microsoftteams" });
+      if (data) {
+        data.accessToken = accessToken;
+        await data.save();
+        res.cookie('accessToken', accessToken, { httpOnly: true });
+        res.status(202).json('Microsoft Teams token updated successfully. Login successful, you can now post a message.');
+      } else {
+        const newApp = new app({ provider: "microsoftteams", accessToken: accessToken });
+        await newApp.save();
+        res.cookie('accessToken', accessToken, { httpOnly: true });
+        res.status(200).json('Microsoft Teams token created successfully. Login successful, you can now post a message.');
+      }
+    } catch (error) {
+      console.log("Error while updating/creating Teams access token:", error.message);
+      res.status(500).send('Internal server error.');
+    }
   } catch (error) {
     console.log('Error obtaining access token:', error);
-    res.send('Error obtaining access token.');
+    res.status(500).send('Error obtaining access token.');
   }
 };
+
 
 module.exports={auth,authorize}
